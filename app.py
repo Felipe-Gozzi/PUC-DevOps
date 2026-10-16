@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from datetime import datetime
 
+import requests
+
 APP = FastAPI()
 TAREFAS = []
 
@@ -75,6 +77,10 @@ async def concluir_tarefa(id: int):
         if id == int(tarefa['id']) and tarefa['concluida'] == False:
             tarefa["concluida"] = True
             tarefa["concluida_em"] = datetime.now()
+            
+            resp = requests.post(f"http://localhost:8002/notificar?id={id}&titulo={tarefa['titulo']}")
+            
+            print(resp.json())
             return {"mensagem": "Tarefa concluída"}
 
     return {"mensagem": "Tarefa não existe ou já concluída"}
