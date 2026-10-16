@@ -3,21 +3,25 @@
 PUC DevOps
 
 To install packges
+
     pip install -r requirements.txt
 
 To Test Local
+
     fastapi dev <ARQUIVO>.py
 
 To change port on API
+
     fastapi dev <ARQUIVO>.py --port <PORTA>
 
 To Test API - Swagger
+
     https://<URL>/docs
 
 NGINX
+
     Install
         sudo apt update && sudo apt install nginx -y
-
     Check Sintax
         sudo nginx -t
     Status
