@@ -42,7 +42,7 @@ async def tarefas():
     return lista_somente_id_titulo
 
 # POST /tarefas: Cria tarefa
-@APP.post("/tarefas")
+@APP.post("/tarefas", status_code=201)
 async def post_tarefa(titulo: str, descricao: str):
     global TAREFAS
 

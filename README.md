@@ -2,17 +2,18 @@
 
 PUC DevOps
 
-To install packges
-    pip install -r requirements.txt
-
-To Test Local
-    fastapi dev <ARQUIVO>.py
-
-To change port on API
-    fastapi dev <ARQUIVO>.py --port <PORTA>
-
-To Test API - Swagger
-    https://<URL>/docs
+Python
+    To install packges
+        pip install -r requirements.txt
+    
+    To Test Local
+        fastapi dev <ARQUIVO>.py
+    
+    To change port on API
+        fastapi dev <ARQUIVO>.py --port <PORTA>
+        
+    To Test API - Swagger
+        https://<URL>/docs
 
 NGINX
     Install
@@ -33,3 +34,13 @@ NGINX
     Find and kill port in execution
         sudo netstat -atunp | grep 8000
         sudo kill <PID>
+
+Tests
+    To test the application
+        pytest tests/
+    
+    To see coverage
+        pytest --cov
+
+    To generate HTML report
+        pytest --cov --cov-report=html
