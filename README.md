@@ -3,6 +3,7 @@
 PUC DevOps
 
 Python
+
     To install packges
         pip install -r requirements.txt
     
@@ -53,3 +54,13 @@ Verify
 
     Code analiser
         bandit app.py
+
+Docker
+
+    Build Image
+        docker build -t <aplicacao>:<versão> <diretório>
+            Ex.: docker build -t tarefas:1.0 .
+    
+    Run Image
+        docker run -it -p <port1>:<port2> <aplicacao>:<versão>
+            Ex.: docker run -it -p 8001:8000 tarefas:1.0
