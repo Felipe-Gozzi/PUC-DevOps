@@ -21,6 +21,13 @@ def test_index():
     assert response.json() == {"mensagem": "Olá, mundo!"}
 
 
+def test_autor():
+    response = CLIENT.get("/autor")
+
+    assert response.status_code == 200
+    assert response.json() == {"mensagem": "Felipe Gozzi da Cruz"}
+
+
 def test_listar_tarefas():
     CLIENT.post("/tarefas", params={"titulo": "Estudar", "descricao": "Revisar testes"})
     CLIENT.post("/tarefas", params={"titulo": "Entregar", "descricao": "Enviar atividade"})

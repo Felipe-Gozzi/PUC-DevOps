@@ -115,3 +115,10 @@ async def index():
     GET /: Página inicial
     """
     return {"mensagem": "Olá, mundo!"}
+
+@APP.get("/autor")
+async def autor():
+    """
+    GET /autor: Retorna o nome completo do autor
+    """
+    return {"mensagem": "Felipe Gozzi da Cruz"}
