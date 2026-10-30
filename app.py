@@ -1,13 +1,15 @@
-from fastapi import FastAPI
+"""
+Aplicativo de gestão de tarefas simples, utilizando FastAPI.
+"""
 from datetime import datetime
+from fastapi import FastAPI
 
 import requests
 
 APP = FastAPI()
-TAREFAS = []
 
 """
-# Estrutura da tarefa
+Estrutura da tarefa
 {
     "id" -> int,
     "titulo" -> str,
@@ -17,8 +19,15 @@ TAREFAS = []
     "concluida_em" -> datetime
 }
 """
+TAREFAS = []
 
 def criar_tarefa(titulo, descricao):
+    """
+    Cria uma nova tarefa com os dados recebidos como parâmetro.
+    @param titulo: Título da tarefa
+    @param descricao: Descrição da tarefa
+    @return: Dicionário representando a tarefa criada
+    """
     return {
         "id": len(TAREFAS),
         "titulo": titulo,
@@ -28,9 +37,13 @@ def criar_tarefa(titulo, descricao):
         "concluida_em": None
     }
 
-# GET /tarefas: Lista todas as tarefas (somente id e titulo)
+
 @APP.get("/tarefas")
 async def tarefas():
+    """
+    GET /tarefas: Lista todas as tarefas
+    @return: Lista de dicionários contendo apenas o ID e o título das tarefas
+    """
     lista_somente_id_titulo = []
 
     for tarefa in TAREFAS:
@@ -41,10 +54,12 @@ async def tarefas():
 
     return lista_somente_id_titulo
 
-# POST /tarefas: Cria tarefa
 @APP.post("/tarefas", status_code=201)
 async def post_tarefa(titulo: str, descricao: str):
-    global TAREFAS
+    """
+    POST /tarefas: Cria tarefa
+    """
+    # global TAREFAS
 
     tarefa_nova = criar_tarefa(titulo, descricao)
 
@@ -52,53 +67,51 @@ async def post_tarefa(titulo: str, descricao: str):
 
     return {"mensagem": "OK"}
 
-# GET /tarefas/{id}: Visualizar tarefa específica
 @APP.get("/tarefas/{id}")
-async def tarefa_especifica(id: int):
-    # 1. Selecionar a tarefa de ID recebido como parâmetro
-    # 2. Retornar todos os dados da tarefa
-    # 3. Caso a tarefa não exista, você tem que mostrar que a tarefa não existe
-
+async def tarefa_especifica(incoming_id: int):
+    """
+    GET /tarefas/{id}: Visualizar tarefa específica
+    """
     for tarefa in TAREFAS:
-        if id == int(tarefa["id"]):
+        if incoming_id == int(tarefa["id"]):
             return tarefa
 
     return {"mensagem": "Tarefa não existe"}
 
-# PUT /tarefas/{id}: Atualiza tarefa específica
 @APP.put("/tarefas/{id}")
-async def concluir_tarefa(id: int):
-    # 1. Selecionar a tarefa de ID recebido como parâmetro
-    # 2. Marcar a tarefa como concluída
-    # 3. Você deve armazenar o horário de conclusão da tarefa
-    # 4. Caso a tarefa não exista, você tem que mostrar que a tarefa não existe
-
+async def concluir_tarefa(incoming_id: int):
+    """
+    PUT /tarefas/{id}: Atualiza tarefa específica
+    """
     for tarefa in TAREFAS:
-        if id == int(tarefa['id']) and tarefa['concluida'] == False:
+        if incoming_id == int(tarefa['id']) and tarefa['concluida'] is False:
             tarefa["concluida"] = True
             tarefa["concluida_em"] = datetime.now()
-            
-            resp = requests.post(f"http://localhost:8002/notificar?id={id}&titulo={tarefa['titulo']}")
-            
+
+            resp = requests.post(
+                f"http://localhost:8002/notificar?id={incoming_id}&titulo={tarefa['titulo']}",
+                timeout=5 )
+
             print(resp.json())
             return {"mensagem": "Tarefa concluída"}
 
     return {"mensagem": "Tarefa não existe ou já concluída"}
 
-# DELETE /tarefas/{id}: Exclui tarefa
 @APP.delete("/tarefas/{id}")
-async def apagar_tarefa(id: int):
-    # 1. Selecionar a tarefa de ID recebido como parâmetro
-    # 2. Remover tarefa da lista de tarefas
-    # 3. Caso a tarefa não exista, você tem que mostrar que a tarefa não existe
-
-    for tarefa in TAREFAS:
-        if id == int(tarefa["id"]):
+async def apagar_tarefa(incoming_id: int):
+    """
+    DELETE /tarefas/{id}: Exclui tarefa
+    """
+    for tarefa in TAREFAS.copy():
+        if incoming_id == int(tarefa["id"]):
             TAREFAS.remove(tarefa)
             return {"mensagem": "Tarefa removida"}
 
     return {"mensagem": "Tarefa não existe"}
-    
+
 @APP.get("/")
 async def index():
+    """
+    GET /: Página inicial
+    """
     return {"mensagem": "Olá, mundo!"}

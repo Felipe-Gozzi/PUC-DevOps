@@ -36,6 +36,7 @@ NGINX
         sudo kill <PID>
 
 Tests
+
     To test the application
         pytest tests/
     
@@ -44,3 +45,11 @@ Tests
 
     To generate HTML report
         pytest --cov --cov-report=html
+
+Verify
+
+    Code quality
+        pylint <ARQUIVO>.py
+
+    Code analiser
+        bandit app.py
