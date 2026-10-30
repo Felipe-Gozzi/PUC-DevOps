@@ -60,7 +60,7 @@ def test_concluir_tarefa(monkeypatch):
     assert app_module.TAREFAS[0]["concluida"] is True
     assert app_module.TAREFAS[0]["concluida_em"] is not None
     mock_post.assert_called_once_with(
-        "http://localhost:8002/notificar?id=0&titulo=Estudar"
+        "http://localhost:8002/notificar?id=0&titulo=Estudar", timeout=5
     )
 
 def test_concluir_tarefa_nao_existe(monkeypatch):

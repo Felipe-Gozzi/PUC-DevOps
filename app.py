@@ -68,28 +68,28 @@ async def post_tarefa(titulo: str, descricao: str):
     return {"mensagem": "OK"}
 
 @APP.get("/tarefas/{id}")
-async def tarefa_especifica(incoming_id: int):
+async def tarefa_especifica(id: int):
     """
     GET /tarefas/{id}: Visualizar tarefa específica
     """
     for tarefa in TAREFAS:
-        if incoming_id == int(tarefa["id"]):
+        if id == int(tarefa["id"]):
             return tarefa
 
     return {"mensagem": "Tarefa não existe"}
 
 @APP.put("/tarefas/{id}")
-async def concluir_tarefa(incoming_id: int):
+async def concluir_tarefa(id: int):
     """
     PUT /tarefas/{id}: Atualiza tarefa específica
     """
     for tarefa in TAREFAS:
-        if incoming_id == int(tarefa['id']) and tarefa['concluida'] is False:
+        if id == int(tarefa['id']) and tarefa['concluida'] is False:
             tarefa["concluida"] = True
             tarefa["concluida_em"] = datetime.now()
 
             resp = requests.post(
-                f"http://localhost:8002/notificar?id={incoming_id}&titulo={tarefa['titulo']}",
+                f"http://localhost:8002/notificar?id={id}&titulo={tarefa['titulo']}",
                 timeout=5 )
 
             print(resp.json())
@@ -98,12 +98,12 @@ async def concluir_tarefa(incoming_id: int):
     return {"mensagem": "Tarefa não existe ou já concluída"}
 
 @APP.delete("/tarefas/{id}")
-async def apagar_tarefa(incoming_id: int):
+async def apagar_tarefa(id: int):
     """
     DELETE /tarefas/{id}: Exclui tarefa
     """
     for tarefa in TAREFAS.copy():
-        if incoming_id == int(tarefa["id"]):
+        if id == int(tarefa["id"]):
             TAREFAS.remove(tarefa)
             return {"mensagem": "Tarefa removida"}
 
