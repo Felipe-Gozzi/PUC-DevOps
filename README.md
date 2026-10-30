@@ -16,9 +16,9 @@ Python
         https://<URL>/docs
 
 NGINX
+
     Install
         sudo apt update && sudo apt install nginx -y
-
     Check Sintax
         sudo nginx -t
     Status
