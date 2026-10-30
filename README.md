@@ -53,7 +53,7 @@ Verify
         pylint <ARQUIVO>.py
 
     Code analiser
-        bandit app.py
+        bandit <ARQUIVO>.py
 
 Docker
 

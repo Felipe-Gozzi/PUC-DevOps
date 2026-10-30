@@ -1,10 +1,10 @@
 from unittest.mock import Mock
 
-import app as app_module
+import app.api as app_module
 import pytest
 
 from fastapi.testclient import TestClient
-from app import APP
+from app.api import APP
 
 CLIENT = TestClient(APP)
 
@@ -14,11 +14,10 @@ def reset_tarefas():
     yield
     app_module.TAREFAS.clear()
 
-
 def test_index():
     response = CLIENT.get("/")
     assert response.status_code == 200
-    assert response.json() == {"mensagem": "Olá, mundo!"}
+    assert response.json() == {"mensagem": "Servidor rodando!"}
 
 
 def test_autor():
@@ -47,9 +46,9 @@ def test_criar_tarefa():
     assert response.status_code == 201
     assert response.json() == {"mensagem": "OK"}
     assert len(app_module.TAREFAS) == 1
-    assert app_module.TAREFAS[0]["titulo"] == "Estudar"
-    assert app_module.TAREFAS[0]["descricao"] == "Revisar testes"
-    assert app_module.TAREFAS[0]["concluida"] is False
+    assert app_module.TAREFAS[0].titulo == "Estudar"
+    assert app_module.TAREFAS[0].descricao == "Revisar testes"
+    assert app_module.TAREFAS[0].concluida is False
 
 
 def test_concluir_tarefa(monkeypatch):
@@ -64,10 +63,12 @@ def test_concluir_tarefa(monkeypatch):
 
     assert response.status_code == 200
     assert response.json() == {"mensagem": "Tarefa concluída"}
-    assert app_module.TAREFAS[0]["concluida"] is True
-    assert app_module.TAREFAS[0]["concluida_em"] is not None
+    assert app_module.TAREFAS[0].concluida is True
+    assert app_module.TAREFAS[0].data_conclusao is not None
     mock_post.assert_called_once_with(
-        "http://localhost:8002/notificar?id=0&titulo=Estudar", timeout=5
+        'http://localhost:8002/notificar', 
+        params={'incoming_id': 0, 'titulo': 'Estudar'}, 
+        timeout=5
     )
 
 def test_concluir_tarefa_nao_existe(monkeypatch):
@@ -93,7 +94,7 @@ def test_obter_tarefa_por_id():
     assert response.json()["titulo"] == "Estudar"
     assert response.json()["descricao"] == "Revisar testes"
     assert response.json()["concluida"] is False
-    assert response.json()["concluida_em"] is None
+    assert response.json()["data_conclusao"] is None
 
 def test_obter_tarefa_por_id_nao_existe():
     
