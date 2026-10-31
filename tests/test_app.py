@@ -1,5 +1,7 @@
 from unittest.mock import Mock
 
+import requests
+
 import app.api as app_module
 import pytest
 
@@ -70,6 +72,21 @@ def test_concluir_tarefa(monkeypatch):
         params={'incoming_id': 0, 'titulo': 'Estudar'}, 
         timeout=5
     )
+
+def test_concluir_tarefa_fail_post(monkeypatch):
+    CLIENT.post(
+        "/tarefas",
+        params={"titulo": "Estudar", "descricao": "Revisar testes"},
+    )
+    mock_post = Mock(side_effect=requests.exceptions.ConnectionError)
+    monkeypatch.setattr(app_module.requests, "post", mock_post)
+    
+    response = CLIENT.put("/tarefas/0")
+
+    assert response.status_code == 200
+    assert response.json() == {"mensagem": "Tarefa concluída"}
+    assert app_module.TAREFAS[0].concluida is True
+    assert app_module.TAREFAS[0].data_conclusao is not None
 
 def test_concluir_tarefa_nao_existe(monkeypatch):
 

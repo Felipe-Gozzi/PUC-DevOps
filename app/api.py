@@ -75,11 +75,10 @@ async def concluir_tarefa(incoming_id: int):
             }
 
             try:
-                resp = requests.post( url, params=params, timeout=5 )
+                _ = requests.post( url, params=params, timeout=5 )
             except RequestConnectionError as e:
                 print(e)
 
-            print(resp.json())
             return {"mensagem": "Tarefa concluída"}
 
     return {"mensagem": "Tarefa não existe ou já concluída"}
