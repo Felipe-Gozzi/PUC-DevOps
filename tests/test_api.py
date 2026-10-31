@@ -24,6 +24,25 @@ with patch.dict(
     app_module = importlib.import_module("app.api")
 
 
+def test_configuracao_banco_incompleta(monkeypatch):
+    configuracao = {
+        "DATABASE_USERNAME": "test",
+        "DATABASE_PASSWORD": "test",
+        "DATABASE_HOST": "localhost",
+        "DATABASE_PORT": "3306",
+        "DATABASE_NAME": "test",
+    }
+    for variavel, valor in configuracao.items():
+        monkeypatch.setenv(variavel, valor)
+    monkeypatch.delenv("DATABASE_USERNAME")
+
+    with pytest.raises(ValueError, match="Configuração do banco de dados incompleta"):
+        importlib.reload(app_module)
+
+    monkeypatch.setenv("DATABASE_USERNAME", configuracao["DATABASE_USERNAME"])
+    importlib.reload(app_module)
+
+
 @pytest.fixture
 def client(monkeypatch):
     engine = create_engine(
