@@ -64,3 +64,17 @@ Docker
     Run Image
         docker run -it -p <port1>:<port2> <aplicacao>:<versão>
             Ex.: docker run -it -p 8001:8000 tarefas:1.0
+
+MySQL DB
+
+    Run mysql DB
+        docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root mysql
+    
+    See Container status
+        docker ps
+            See Conteiner ID ( Ex.: fa3753fc54d4 )
+        
+    Exec MySQL
+        docker exec -it <CONTAINR_ID> mysql -uroot -p
+            create database <DATABASE_NAME>;
+            exit;

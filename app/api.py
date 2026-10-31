@@ -4,6 +4,7 @@ Aplicativo de gestão de tarefas simples, utilizando FastAPI.
 from datetime import datetime, timezone
 from typing import Annotated
 
+import os
 import requests
 from fastapi import FastAPI, Depends
 from sqlmodel import SQLModel, Session, create_engine, select
@@ -11,7 +12,22 @@ from requests.exceptions import ConnectionError as RequestConnectionError
 
 from .modelo import Tarefa
 
-ENGINE = create_engine("sqlite:///banco.db", connect_args={"check_same_thread": False})
+DATABASE_USERNAME = os.environ.get("DATABASE_USERNAME")
+DATABASE_PASSWORD = os.environ.get("DATABASE_PASSWORD")
+DATABASE_HOST = os.environ.get("DATABASE_HOST")
+DATABASE_PORT = os.environ.get("DATABASE_PORT")
+DATABASE_NAME = os.environ.get("DATABASE_NAME")
+
+if  DATABASE_USERNAME is None or \
+    DATABASE_PASSWORD is None or \
+    DATABASE_HOST is None or \
+    DATABASE_PORT is None or \
+    DATABASE_NAME is None:
+    raise ValueError("Configuração do banco de dados incompleta")
+
+ENGINE = create_engine(
+    f"mysql+pymysql://{DATABASE_USERNAME}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
+    )
 
 def create_session():
     """ Cria uma nova sessão para o banco de dados """
