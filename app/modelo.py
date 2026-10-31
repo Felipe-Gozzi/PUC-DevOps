@@ -1,19 +1,28 @@
 """ Modelos da aplicação de tarefas """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
-from pydantic import BaseModel
+from sqlmodel import SQLModel, Field
 
-class Tarefa(BaseModel):
+class Tarefa(SQLModel, table=True):
     """ Modelo de tarefa """
-    id: int
+
+    id: int | None = Field( alias="_id", default=None, primary_key=True, unique=True )
     titulo: str
     descricao: Optional[str] = None
     concluida: bool = False
     data_criacao: datetime
     data_conclusao: Optional[datetime] = None
 
+    def resumir(self):
+        """Resume tarefa em `id: titulo`"""
+        return {self.id: self.titulo}
+
+    def get_id(self):
+        """Retorna ID da tarefa"""
+        return self.id
+
     def finalizar(self):
         """ Método para finalizar tarefa """
         self.concluida = True
-        self.data_conclusao = datetime.now().isoformat(timespec='seconds')
+        self.data_conclusao = datetime.now(timezone.utc)

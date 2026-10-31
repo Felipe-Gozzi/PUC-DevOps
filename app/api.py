@@ -1,15 +1,31 @@
 """
 Aplicativo de gestão de tarefas simples, utilizando FastAPI.
 """
-from datetime import datetime
-from fastapi import FastAPI
+from datetime import datetime, timezone
+from typing import Annotated
 
 import requests
+from fastapi import FastAPI, Depends
+from sqlmodel import SQLModel, Session, create_engine, select
 from requests.exceptions import ConnectionError as RequestConnectionError
 
-from app.modelo import Tarefa
+from .modelo import Tarefa
 
-APP = FastAPI()
+ENGINE = create_engine("sqlite:///banco.db", connect_args={"check_same_thread": False})
+
+def create_session():
+    """ Cria uma nova sessão para o banco de dados """
+    with Session(ENGINE) as session:
+        yield session
+
+SESSAO = Annotated[Session, Depends(create_session)]
+
+async def inicializacao(_app: FastAPI):
+    """ Função de inicialização da aplicação FastAPI """
+    SQLModel.metadata.create_all(ENGINE)
+    yield
+
+APP = FastAPI(lifespan=inicializacao)
 TAREFAS = []
 
 @APP.get("/")
@@ -23,72 +39,76 @@ async def autor():
     return {"mensagem": "Felipe Gozzi da Cruz"}
 
 @APP.get("/tarefas")
-async def tarefas():
+async def tarefas(sessao: SESSAO) -> list[dict[int, str]]:
     """ 
     GET /tarefas: Lista todas as tarefas
-    @return: Lista de dicionários contendo apenas o ID e o título das tarefas
+    @return: Lista de objetos Tarefa
     """
-    lista_somente_id_titulo = []
+    lista_tarefas = sessao.exec(select(Tarefa).offset(0)).all()
 
-    for tarefa in TAREFAS:
-        id_tarefa = tarefa.id
-        titulo_tarefa = tarefa.titulo
-
-        lista_somente_id_titulo.append({id_tarefa: titulo_tarefa})
-
-    return lista_somente_id_titulo
+    return [tarefa.resumir() for tarefa in lista_tarefas]
 
 @APP.post("/tarefas", status_code=201)
-async def post_tarefa(titulo: str, descricao: str = None):
+async def post_tarefa(sessao: SESSAO, titulo: str, descricao: str = None) -> Tarefa:
     """ POST /tarefas: Cria tarefa """
     tarefa_nova = Tarefa(
-        id=len(TAREFAS),
         titulo=titulo,
         descricao=descricao,
-        data_criacao=datetime.now().isoformat(timespec='seconds')
+        data_criacao=datetime.now(timezone.utc),
     )
 
-    TAREFAS.append(tarefa_nova)
+    sessao.add(tarefa_nova)
+    sessao.commit()
+    sessao.refresh(tarefa_nova)
 
-    return {"mensagem": "OK"}
+    return tarefa_nova
 
 @APP.get("/tarefas/{incoming_id}")
-async def tarefa_especifica(incoming_id: int):
+async def tarefa_especifica(
+    sessao: SESSAO, incoming_id: int
+) -> Tarefa | dict[str, str]:
     """ GET /tarefas/{incoming_id}: Visualizar tarefa específica """
-    for tarefa in TAREFAS:
-        if incoming_id == int(tarefa.id):
-            return tarefa
+    regra = select(Tarefa).where(Tarefa.id == incoming_id)
+    tarefa = sessao.exec(regra).first()
+    if tarefa:
+        return tarefa
 
     return {"mensagem": "Tarefa não existe"}
 
 @APP.put("/tarefas/{incoming_id}")
-async def concluir_tarefa(incoming_id: int):
+async def concluir_tarefa(sessao: SESSAO, incoming_id: int) -> dict:
     """ PUT /tarefas/{incoming_id}: Atualiza tarefa específica """
-    for tarefa in TAREFAS:
-        if incoming_id == int(tarefa.id) and tarefa.concluida is False:
-            tarefa.finalizar()
+    regra = select(Tarefa).where(Tarefa.id == incoming_id)
+    tarefa = sessao.exec(regra).first()
+    if tarefa and tarefa.concluida is False:
+        tarefa.finalizar()
 
-            url = "http://localhost:8002/notificar"
-            params = {
-                "incoming_id": incoming_id,
-                "titulo": tarefa.titulo,
-            }
+        url = "http://localhost:8002/notificar"
+        params = {
+            "incoming_id": incoming_id,
+            "titulo": tarefa.titulo,
+        }
+        sessao.add(tarefa)
+        sessao.commit()
+        sessao.refresh(tarefa)
 
-            try:
-                _ = requests.post( url, params=params, timeout=5 )
-            except RequestConnectionError as e:
-                print(e)
+        try:
+            _ = requests.post( url, params=params, timeout=5 )
+        except RequestConnectionError as e:
+            print(e)
 
-            return {"mensagem": "Tarefa concluída"}
+        return {"mensagem": "Tarefa concluída"}
 
     return {"mensagem": "Tarefa não existe ou já concluída"}
 
 @APP.delete("/tarefas/{incoming_id}")
-async def apagar_tarefa(incoming_id: int):
+async def apagar_tarefa(sessao: SESSAO, incoming_id: int) -> dict:
     """ DELETE /tarefas/{incoming_id}: Exclui tarefa específica """
-    for tarefa in TAREFAS.copy():
-        if incoming_id == int(tarefa.id):
-            TAREFAS.remove(tarefa)
-            return {"mensagem": "Tarefa removida"}
+    regra = select(Tarefa).where(Tarefa.id == incoming_id)
+    tarefa = sessao.exec(regra).first()
+    if tarefa:
+        sessao.delete(tarefa)
+        sessao.commit()
+        return {"mensagem": "Tarefa removida"}
 
     return {"mensagem": "Tarefa não existe"}
