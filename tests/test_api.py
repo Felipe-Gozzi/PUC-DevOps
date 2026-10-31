@@ -1,5 +1,6 @@
 import asyncio
-from unittest.mock import Mock
+import importlib
+from unittest.mock import Mock, patch
 
 import pytest
 import requests
@@ -8,8 +9,19 @@ from sqlalchemy import inspect
 from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel, create_engine
 
-import app.api as app_module
 from app.modelo import Tarefa
+
+with patch.dict(
+    "os.environ",
+    {
+        "DATABASE_USERNAME": "test",
+        "DATABASE_PASSWORD": "test",
+        "DATABASE_HOST": "localhost",
+        "DATABASE_PORT": "3306",
+        "DATABASE_NAME": "test",
+    },
+):
+    app_module = importlib.import_module("app.api")
 
 
 @pytest.fixture

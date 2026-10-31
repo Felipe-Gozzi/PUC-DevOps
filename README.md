@@ -74,6 +74,9 @@ MySQL DB
         docker ps
             See Conteiner ID ( Ex.: fa3753fc54d4 )
         
+    See Container Address
+        docker inspect <CONTAINR_ID> | grep -i Address
+    
     Exec MySQL
         docker exec -it <CONTAINR_ID> mysql -uroot -p
             create database <DATABASE_NAME>;
