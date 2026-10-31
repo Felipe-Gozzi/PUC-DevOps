@@ -25,7 +25,7 @@ if  DATABASE_USERNAME is None or \
     DATABASE_NAME is None:
     raise ValueError("Configuração do banco de dados incompleta")
 
-DB_STRING_CREDENTIALS = f"mysql+pymysql://{DATABASE_USERNAME}:{DATABASE_PASSWORD}"
+DB_STRING_CREDENTIALS = f"postgresql+psycopg2://{DATABASE_USERNAME}:{DATABASE_PASSWORD}"
 DB_STRING_ADDRESS = f"@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
 
 ENGINE = create_engine(f"{DB_STRING_CREDENTIALS}{DB_STRING_ADDRESS}")
